@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: "product-service"
+  data:
+    mongodb:
+      uri: mongodb://mongouser:test@localhost:27018/product?authSource=admin
+      database: product
+
+server:
+  port: 8130
+
+

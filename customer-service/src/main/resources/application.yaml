@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: "customer-service"
+  datasource:
+    url: jdbc:mysql://localhost:3307/customer?useSSL=false&serverTimezone=UTC
+    username: mysql
+    password: test
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+server:
+  port: 8090
+
+

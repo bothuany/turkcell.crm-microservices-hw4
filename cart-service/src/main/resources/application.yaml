@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: "cart-service"
+  data:
+    mongodb:
+      uri: mongodb://mongouser:test@localhost:27019/cart?authSource=admin
+      database: cart
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    showSql: true
+    hibernate:
+      ddlAuto: create
+server:
+  port: 8080
+
+

@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: "identity-service"
+  datasource:
+    url: jdbc:postgresql://localhost:5434/identity
+    username: postgres
+    password: test
+
+server:
+  port: 8100
+
+

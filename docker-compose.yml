@@ -1,0 +1,72 @@
+version: '3.8'
+services:
+  postgres_5433:
+    image: postgres:latest
+    container_name: postgres_5433
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: order
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_5433_data:/var/lib/postgresql/data
+
+  postgres_5434:
+    image: postgres:latest
+    container_name: postgres_5434
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: identity
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_5434_data:/var/lib/postgresql/data
+
+  mongo_27018:
+    image: mongo:latest
+    container_name: mongo_27018
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongouser
+      MONGO_INITDB_ROOT_PASSWORD: test
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo_27018_data:/data/db
+
+  mongo_27019:
+    image: mongo:latest
+    container_name: mongo_27019
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongouser
+      MONGO_INITDB_ROOT_PASSWORD: test
+    ports:
+      - "27019:27017"
+    volumes:
+      - mongo_27019_data:/data/db
+
+  mysql_3307:
+    image: mysql:latest
+    container_name: mysql_3307
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: test
+      MYSQL_DATABASE: customer
+      MYSQL_USER: mysql
+      MYSQL_PASSWORD: test
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_3307_data:/var/lib/mysql
+
+volumes:
+  postgres_5433_data:
+  postgres_5434_data:
+  mongo_27018_data:
+  mongo_27019_data:
+  mysql_3307_data:
