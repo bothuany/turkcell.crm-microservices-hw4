@@ -7,9 +7,9 @@ server:
 
 eureka:
   instance:
-    hostname: "localhost"
+    hostname: "discovery-server"
   client:
     serviceUrl:
-      defaultZone: "http://localhost:8888/eureka/"
+      defaultZone: "http://discovery-server:8888/eureka/"
     register-with-eureka: false
     fetch-registry: false

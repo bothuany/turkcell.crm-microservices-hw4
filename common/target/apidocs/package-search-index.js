@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"io.github.bothuany"},{"l":"io.github.bothuany.events.customer"},{"l":"io.github.bothuany.events.identity"},{"l":"io.github.bothuany.events.order"},{"l":"io.github.bothuany.events.product"}];updateSearchResults();

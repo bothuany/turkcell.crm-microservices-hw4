@@ -11,7 +11,19 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     showSql: true
     hibernate:
-      ddlAuto: create
+      ddlAuto: update
+  cloud:
+    stream:
+      defaultBinder: kafka
+      function:
+        definition: cartCreatedFunction
+      bindings:
+        cartCreatedFunction-out-0:
+          destination: cart-topic
+          content-type: application/json
+      kafka:
+        binder:
+          brokers: localhost:9092
 server:
   port: 8140
 

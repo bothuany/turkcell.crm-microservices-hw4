@@ -1,0 +1,5 @@
+io\github\bothuany\Main.class
+io\github\bothuany\events\identity\IdentityCreatedEvent.class
+io\github\bothuany\events\product\ProductCreatedEvent.class
+io\github\bothuany\events\customer\CustomerCreatedEvent.class
+io\github\bothuany\events\order\OrderCreatedEvent.class
