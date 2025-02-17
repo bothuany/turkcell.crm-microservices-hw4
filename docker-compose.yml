@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 services:
   postgres_5433:
     image: postgres:latest
@@ -12,6 +12,8 @@ services:
       - "5433:5432"
     volumes:
       - postgres_5433_data:/var/lib/postgresql/data
+    networks:
+      - app-network
 
   postgres_5434:
     image: postgres:latest
@@ -25,6 +27,8 @@ services:
       - "5434:5432"
     volumes:
       - postgres_5434_data:/var/lib/postgresql/data
+    networks:
+      - app-network
 
   mongo_27018:
     image: mongo:latest
@@ -37,6 +41,8 @@ services:
       - "27018:27017"
     volumes:
       - mongo_27018_data:/data/db
+    networks:
+      - app-network
 
   mongo_27019:
     image: mongo:latest
@@ -49,6 +55,8 @@ services:
       - "27019:27017"
     volumes:
       - mongo_27019_data:/data/db
+    networks:
+      - app-network
 
   mysql_3307:
     image: mysql:latest
@@ -63,6 +71,9 @@ services:
       - "3307:3306"
     volumes:
       - mysql_3307_data:/var/lib/mysql
+    networks:
+      - app-network
+
   kafka:
     image: bitnami/kafka
     ports:
@@ -73,7 +84,7 @@ services:
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092,EXTERNAL://localhost:9094
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
       - KAFKA_BROKER_ID=1
       - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@127.0.0.1:9093
       - ALLOW_PLAINTEXT_LISTENER=yes
@@ -81,90 +92,150 @@ services:
       - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
       - BITNAMI_DEBUG=yes
       - KAFKA_CFG_NUM_PARTITIONS=2
-  discovery-server: #mvn spring-boot:build-image -Dspring-boot.build-image.imageName=discovery-server
-    image: discovery-server
+    networks:
+      - app-network
+
+  discovery-server:
+    build:
+      context: ./discovery-server
+      dockerfile: Dockerfile
     container_name: discovery-server
     ports:
       - "8888:8888"
     networks:
       - app-network
-  gateway-server: #mvn spring-boot:build-image -Dspring-boot.build-image.imageName=gateway-server
-    image: gateway-server
+
+  gateway-server:
+    build:
+      context: ./gateway-server
+      dockerfile: Dockerfile
     container_name: gateway-server
     ports:
       - "8081:8081"
+    environment:
+      - SPRING_CLOUD_DISCOVERY_ENABLED=true
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8888/eureka/
     networks:
       - app-network
     depends_on:
       - discovery-server
-  cart-service: #mvn spring-boot:build-image -Dspring-boot.build-image.imageName=cart-service
-    image: cart-service
+
+  cart-service:
+    build:
+      context: ./cart-service
+      dockerfile: Dockerfile
     container_name: cart-service
     ports:
       - "8140:8140"
     environment:
-      SPRING_DATASOURCE_URL: "mongodb://mongouser:test@mongo_27019_data:27019/cart?authSource=admin"
+      - SPRING_DATA_MONGODB_URI=mongodb://mongouser:test@mongo_27019:27017/cart?authSource=admin
+      - SPRING_CLOUD_DISCOVERY_ENABLED=true
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8888/eureka/
+      - SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS=kafka:9092
     networks:
       - app-network
     depends_on:
       - discovery-server
-  customer-service: #mvn spring-boot:build-image -Dspring-boot.build-image.imageName=customer-service
-      image: customer-service
-      container_name: customer-service
-      ports:
-        - "8140:8140"
-      environment:
-        SPRING_DATASOURCE_URL: "jdbc:mysql://mysql_3307_data:3307/customer?useSSL=false&serverTimezone=UTC"
-      networks:
-        - app-network
-      depends_on:
-        - discovery-server
-  identity-service: #mvn spring-boot:build-image -Dspring-boot.build-image.imageName=identity-service
-      image: identity-service
-      container_name: identity-service
-      ports:
-        - "8140:8140"
-      environment:
-        SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres_5434_data:5434/identity"
-      networks:
-        - app-network
-      depends_on:
-        - discovery-server
-  notification-service: #mvn spring-boot:build-image -Dspring-boot.build-image.imageName=notification-service
-      image: notification-service
-      container_name: notification-service
-      ports:
-        - "8140:8140"
-      networks:
-        - app-network
-      depends_on:
-        - discovery-server
-  order-service: #mvn spring-boot:build-image -Dspring-boot.build-image.imageName=order-service
-      image: order-service
-      container_name: order-service
-      ports:
-        - "8140:8140"
-      environment:
-        SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres_5433:5432/order"
-      networks:
-        - app-network
-      depends_on:
-        - discovery-server
-  product-service: #mvn spring-boot:build-image -Dspring-boot.build-image.imageName=product-service
-      image: product-service
-      container_name: product-service
-      ports:
-        - "8130:8130"
-      environment:
-        SPRING_DATASOURCE_URL: "mongodb://mongouser:test@mongo_27018_data:27018/product?authSource=admin"
-      networks:
-        - app-network
-      depends_on:
-        - discovery-server
+      - mongo_27019
+      - kafka
+
+  customer-service:
+    build:
+      context: ./customer-service
+      dockerfile: Dockerfile
+    container_name: customer-service
+    ports:
+      - "8090:8090"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql_3307:3306/customer?useSSL=false&serverTimezone=UTC
+      - SPRING_CLOUD_DISCOVERY_ENABLED=true
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8888/eureka/
+      - SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS=kafka:9092
+    networks:
+      - app-network
+    depends_on:
+      - discovery-server
+      - mysql_3307
+      - kafka
+
+  identity-service:
+    build:
+      context: ./identity-service
+      dockerfile: Dockerfile
+    container_name: identity-service
+    ports:
+      - "8100:8100"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres_5434:5432/identity
+      - SPRING_CLOUD_DISCOVERY_ENABLED=true
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8888/eureka/
+      - SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS=kafka:9092
+    networks:
+      - app-network
+    depends_on:
+      - discovery-server
+      - postgres_5434
+      - kafka
+
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    container_name: notification-service
+    ports:
+      - "8110:8110"
+    environment:
+      - SPRING_CLOUD_DISCOVERY_ENABLED=true
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8888/eureka/
+      - SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS=kafka:9092
+    networks:
+      - app-network
+    depends_on:
+      - discovery-server
+      - kafka
+
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    container_name: order-service
+    ports:
+      - "8120:8120"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres_5433:5432/order
+      - SPRING_CLOUD_DISCOVERY_ENABLED=true
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8888/eureka/
+      - SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS=kafka:9092
+    networks:
+      - app-network
+    depends_on:
+      - discovery-server
+      - postgres_5433
+      - kafka
+
+  product-service:
+    build:
+      context: ./product-service
+      dockerfile: Dockerfile
+    container_name: product-service
+    ports:
+      - "8130:8130"
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongouser:test@mongo_27018:27017/product?authSource=admin
+      - SPRING_CLOUD_DISCOVERY_ENABLED=true
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8888/eureka/
+      - SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS=kafka:9092
+    networks:
+      - app-network
+    depends_on:
+      - discovery-server
+      - mongo_27018
+      - kafka
 
 networks:
   app-network:
     driver: bridge
+
 volumes:
   postgres_5433_data:
   postgres_5434_data:
