@@ -95,6 +95,16 @@ services:
     networks:
       - app-network
 
+  config-server:
+    build:
+      context: ./config-server
+      dockerfile: Dockerfile
+    container_name: config-server
+    ports:
+      - "8079:8079"
+    networks:
+      - app-network
+
   discovery-server:
     build:
       context: ./discovery-server
@@ -102,8 +112,13 @@ services:
     container_name: discovery-server
     ports:
       - "8888:8888"
+    environment:
+      - SPRING_CLOUD_CONFIG_PROFILE=prod
+      - CONFIGURL=http://config-server:8079
     networks:
       - app-network
+    depends_on:
+      - config-server
 
   gateway-server:
     build:
@@ -113,11 +128,12 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - SPRING_CLOUD_DISCOVERY_ENABLED=true
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8888/eureka/
+      - SPRING_CLOUD_CONFIG_PROFILE=prod
+      - CONFIGURL=http://config-server:8079
     networks:
       - app-network
     depends_on:
+      - config-server
       - discovery-server
 
   cart-service:
@@ -128,13 +144,12 @@ services:
     ports:
       - "8140:8140"
     environment:
-      - SPRING_DATA_MONGODB_URI=mongodb://mongouser:test@mongo_27019:27017/cart?authSource=admin
-      - SPRING_CLOUD_DISCOVERY_ENABLED=true
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8888/eureka/
-      - SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS=kafka:9092
+      - SPRING_CLOUD_CONFIG_PROFILE=prod
+      - CONFIGURL=http://config-server:8079
     networks:
       - app-network
     depends_on:
+      - config-server
       - discovery-server
       - mongo_27019
       - kafka
@@ -147,13 +162,12 @@ services:
     ports:
       - "8090:8090"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql_3307:3306/customer?useSSL=false&serverTimezone=UTC
-      - SPRING_CLOUD_DISCOVERY_ENABLED=true
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8888/eureka/
-      - SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS=kafka:9092
+      - SPRING_CLOUD_CONFIG_PROFILE=prod
+      - CONFIGURL=http://config-server:8079
     networks:
       - app-network
     depends_on:
+      - config-server
       - discovery-server
       - mysql_3307
       - kafka
@@ -166,13 +180,12 @@ services:
     ports:
       - "8100:8100"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres_5434:5432/identity
-      - SPRING_CLOUD_DISCOVERY_ENABLED=true
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8888/eureka/
-      - SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS=kafka:9092
+      - SPRING_CLOUD_CONFIG_PROFILE=prod
+      - CONFIGURL=http://config-server:8079
     networks:
       - app-network
     depends_on:
+      - config-server
       - discovery-server
       - postgres_5434
       - kafka
@@ -185,12 +198,12 @@ services:
     ports:
       - "8110:8110"
     environment:
-      - SPRING_CLOUD_DISCOVERY_ENABLED=true
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8888/eureka/
-      - SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS=kafka:9092
+      - SPRING_CLOUD_CONFIG_PROFILE=prod
+      - CONFIGURL=http://config-server:8079
     networks:
       - app-network
     depends_on:
+      - config-server
       - discovery-server
       - kafka
 
@@ -202,13 +215,12 @@ services:
     ports:
       - "8120:8120"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres_5433:5432/order
-      - SPRING_CLOUD_DISCOVERY_ENABLED=true
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8888/eureka/
-      - SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS=kafka:9092
+      - SPRING_CLOUD_CONFIG_PROFILE=prod
+      - CONFIGURL=http://config-server:8079
     networks:
       - app-network
     depends_on:
+      - config-server
       - discovery-server
       - postgres_5433
       - kafka
@@ -221,13 +233,12 @@ services:
     ports:
       - "8130:8130"
     environment:
-      - SPRING_DATA_MONGODB_URI=mongodb://mongouser:test@mongo_27018:27017/product?authSource=admin
-      - SPRING_CLOUD_DISCOVERY_ENABLED=true
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8888/eureka/
-      - SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS=kafka:9092
+      - SPRING_CLOUD_CONFIG_PROFILE=prod
+      - CONFIGURL=http://config-server:8079
     networks:
       - app-network
     depends_on:
+      - config-server
       - discovery-server
       - mongo_27018
       - kafka

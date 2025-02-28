@@ -95,6 +95,16 @@ services:
     networks:
       - app-network-dev
 
+  config-server:
+    build:
+      context: ./config-server
+      dockerfile: Dockerfile
+    container_name: config-server
+    ports:
+      - "8079:8079"
+    networks:
+      - app-network-dev
+
 networks:
   app-network-dev:
     driver: bridge

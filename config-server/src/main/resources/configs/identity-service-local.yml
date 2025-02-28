@@ -1,0 +1,24 @@
+server:
+  port: 8100
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5434/identity
+    username: postgres
+    password: test
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  cloud:
+    discovery:
+      enabled: true
+    stream:
+      kafka:
+        binder:
+          brokers: localhost:9092
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8888/eureka/

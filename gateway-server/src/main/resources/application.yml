@@ -1,43 +1,26 @@
+configurl: http://localhost:8079
+
 spring:
   application:
     name: "gateway-server"
   cloud:
-    gateway:
-      routes:
-        - id: "order-service"
-          uri: "lb://order-service"
-          predicates:
-            - "Path=/api/v1/orders/**"
-        - id: "customer-service"
-          uri: "lb://customer-service"
-          predicates:
-            - "Path=/api/v1/customers/**"
-        - id: "cart-service"
-          uri: "lb://cart-service"
-          predicates:
-            - "Path=/api/v1/cart/**"
-        - id: "product-service"
-          uri: "lb://product-service"
-          predicates:
-            - "Path=/api/v1/products/**"
-        - id: "identity-service"
-          uri: "lb://identity-service"
-          predicates:
-            - "Path=/api/v1/identity/**"
-        - id: "notification-service"
-          uri: "lb://notification-service"
-          predicates:
-            - "Path=/api/v1/notification/**"
-
-server:
-  port: 8081
+    config:
+      profile: local
+      uri: ${configurl}
+      enabled: true
+    service-registry:
+      auto-registration:
+        enabled: true
+    discovery:
+      enabled: true
+  config:
+    import: configserver:${configurl}
 
 eureka:
   client:
-    service-url:
-      defaultZone: "http://localhost:8888/eureka/"
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
     register-with-eureka: true
     fetch-registry: true
   instance:
-    instance-id: "${spring.application.name}:${random.value}"
     prefer-ip-address: true
