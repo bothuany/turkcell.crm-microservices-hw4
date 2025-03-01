@@ -1,0 +1,80 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: microservices
+
+resources:
+  # Namespace
+  - namespace/namespace.yaml
+
+  # Databases
+  - databases/postgres-order/configmap.yaml
+  - databases/postgres-order/secret.yaml
+  - databases/postgres-order/pvc.yaml
+  - databases/postgres-order/deployment.yaml
+  - databases/postgres-order/service.yaml
+
+  - databases/postgres-identity/configmap.yaml
+  - databases/postgres-identity/secret.yaml
+  - databases/postgres-identity/pvc.yaml
+  - databases/postgres-identity/deployment.yaml
+  - databases/postgres-identity/service.yaml
+
+  - databases/mongo-product/secret.yaml
+  - databases/mongo-product/pvc.yaml
+  - databases/mongo-product/deployment.yaml
+  - databases/mongo-product/service.yaml
+
+  - databases/mongo-cart/secret.yaml
+  - databases/mongo-cart/pvc.yaml
+  - databases/mongo-cart/deployment.yaml
+  - databases/mongo-cart/service.yaml
+
+  - databases/mysql-customer/configmap.yaml
+  - databases/mysql-customer/secret.yaml
+  - databases/mysql-customer/pvc.yaml
+  - databases/mysql-customer/deployment.yaml
+  - databases/mysql-customer/service.yaml
+
+  - databases/kafka/configmap.yaml
+  - databases/kafka/deployment.yaml
+  - databases/kafka/service.yaml
+
+  # Infrastructure Services
+  - infrastructure/config-server/deployment.yaml
+  - infrastructure/config-server/service.yaml
+
+  - infrastructure/discovery-server/configmap.yaml
+  - infrastructure/discovery-server/deployment.yaml
+  - infrastructure/discovery-server/service.yaml
+
+  #- infrastructure/gateway-server/configmap.yaml
+  #- infrastructure/gateway-server/deployment.yaml
+  #- infrastructure/gateway-server/service.yaml
+  #- infrastructure/gateway-server/ingress.yaml
+#
+## Microservices
+#- services/cart-service/configmap.yaml
+#- services/cart-service/deployment.yaml
+#- services/cart-service/service.yaml
+#
+#- services/customer-service/configmap.yaml
+#- services/customer-service/deployment.yaml
+#- services/customer-service/service.yaml
+#
+#- services/identity-service/configmap.yaml
+#- services/identity-service/deployment.yaml
+#- services/identity-service/service.yaml
+#
+#- services/notification-service/configmap.yaml
+#- services/notification-service/deployment.yaml
+#- services/notification-service/service.yaml
+#
+#- services/order-service/configmap.yaml
+#- services/order-service/deployment.yaml
+#- services/order-service/service.yaml
+#
+#- services/product-service/configmap.yaml
+#- services/product-service/deployment.yaml
+#- services/product-service/service.yaml
+#

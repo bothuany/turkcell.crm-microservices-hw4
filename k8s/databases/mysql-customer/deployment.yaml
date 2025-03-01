@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-customer
+  namespace: microservices
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-customer
+  template:
+    metadata:
+      labels:
+        app: mysql-customer
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:latest
+          ports:
+            - containerPort: 3306
+          envFrom:
+            - configMapRef:
+                name: mysql-customer-config
+            - secretRef:
+                name: mysql-customer-secret
+          volumeMounts:
+            - name: mysql-customer-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-customer-storage
+          persistentVolumeClaim:
+            claimName: mysql-customer-pvc
