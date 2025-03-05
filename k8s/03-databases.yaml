@@ -1,0 +1,274 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secrets
+  namespace: microservices
+type: Opaque
+data:
+  postgres-password: dGVzdA== # test
+  mongo-username: bW9uZ291c2Vy # mongouser
+  mongo-password: dGVzdA== # test
+  mysql-root-password: dGVzdA== # test
+  mysql-password: dGVzdA== # test
+---
+# Postgres for Order Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-order
+  namespace: microservices
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-order
+  template:
+    metadata:
+      labels:
+        app: postgres-order
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:latest
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: postgres-password
+            - name: POSTGRES_DB
+              value: order
+          volumeMounts:
+            - name: postgres-order-data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-order-data
+          persistentVolumeClaim:
+            claimName: postgres-order-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-order-service
+  namespace: microservices
+spec:
+  selector:
+    app: postgres-order
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+# Postgres for Identity Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-identity
+  namespace: microservices
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-identity
+  template:
+    metadata:
+      labels:
+        app: postgres-identity
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:latest
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: postgres-password
+            - name: POSTGRES_DB
+              value: identity
+          volumeMounts:
+            - name: postgres-identity-data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-identity-data
+          persistentVolumeClaim:
+            claimName: postgres-identity-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-identity-service
+  namespace: microservices
+spec:
+  selector:
+    app: postgres-identity
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+# MongoDB for Product Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-product
+  namespace: microservices
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo-product
+  template:
+    metadata:
+      labels:
+        app: mongo-product
+    spec:
+      containers:
+        - name: mongo
+          image: mongo:latest
+          ports:
+            - containerPort: 27017
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: mongo-username
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: mongo-password
+          volumeMounts:
+            - name: mongo-product-data
+              mountPath: /data/db
+      volumes:
+        - name: mongo-product-data
+          persistentVolumeClaim:
+            claimName: mongo-product-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-product-service
+  namespace: microservices
+spec:
+  selector:
+    app: mongo-product
+  ports:
+    - port: 27017
+      targetPort: 27017
+---
+# MongoDB for Cart Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-cart
+  namespace: microservices
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo-cart
+  template:
+    metadata:
+      labels:
+        app: mongo-cart
+    spec:
+      containers:
+        - name: mongo
+          image: mongo:latest
+          ports:
+            - containerPort: 27017
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: mongo-username
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: mongo-password
+          volumeMounts:
+            - name: mongo-cart-data
+              mountPath: /data/db
+      volumes:
+        - name: mongo-cart-data
+          persistentVolumeClaim:
+            claimName: mongo-cart-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-cart-service
+  namespace: microservices
+spec:
+  selector:
+    app: mongo-cart
+  ports:
+    - port: 27017
+      targetPort: 27017
+---
+# MySQL for Customer Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-customer
+  namespace: microservices
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-customer
+  template:
+    metadata:
+      labels:
+        app: mysql-customer
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:latest
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: mysql-root-password
+            - name: MYSQL_DATABASE
+              value: customer
+            - name: MYSQL_USER
+              value: mysql
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: mysql-password
+          volumeMounts:
+            - name: mysql-customer-data
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-customer-data
+          persistentVolumeClaim:
+            claimName: mysql-customer-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-customer-service
+  namespace: microservices
+spec:
+  selector:
+    app: mysql-customer
+  ports:
+    - port: 3306
+      targetPort: 3306

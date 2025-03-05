@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: gateway-server-config
-  namespace: microservices
-data:
-  SPRING_CLOUD_CONFIG_PROFILE: "prod"
-  CONFIGURL: "http://config-server:8079"

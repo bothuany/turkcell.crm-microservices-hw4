@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: postgres-identity-config
-  namespace: microservices
-data:
-  POSTGRES_DB: identity
-  POSTGRES_USER: postgres
